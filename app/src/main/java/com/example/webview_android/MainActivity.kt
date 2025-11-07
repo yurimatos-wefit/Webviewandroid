@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
             WebviewandroidTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     WebViewScreen(
-                        url = "https://poc-veiculos.wefit.com.br",
+                        url = "https://poc-veiculos.wefit.com.br/stories",
                         enableJavaScript = true,
                         token = token, // Passar o token
                         modifier = Modifier.padding(innerPadding),

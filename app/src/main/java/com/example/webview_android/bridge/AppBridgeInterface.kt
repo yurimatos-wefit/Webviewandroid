@@ -17,6 +17,8 @@ class AppBridgeInterface(
     private val mainHandler = Handler(Looper.getMainLooper())
     private val imageShareHandler = ImageShareHandler(context)
 
+
+// Interface para comunicação com o WebView (Aqui chegam os tokens e as imagens)
     @JavascriptInterface
     fun postMessage(message: String) {
         try {
