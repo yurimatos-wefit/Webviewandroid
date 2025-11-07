@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         // Buscar token JWT
-        val token = "sdfsdfsdfsdfs"
+        val token = "testeToken"
 
         setContent {
             WebviewandroidTheme {

@@ -7,6 +7,7 @@ import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
+import com.example.webview_android.share.ImageShareHandler
 import org.json.JSONObject
 
 class AppBridgeInterface(
@@ -14,6 +15,7 @@ class AppBridgeInterface(
     private val context: Context
 ) {
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val imageShareHandler = ImageShareHandler(context)
 
     @JavascriptInterface
     fun postMessage(message: String) {
@@ -26,6 +28,15 @@ class AppBridgeInterface(
                     // Mostrar feedback visual nativo
                     showToast("📩 Notificação recebida: $type")
                     handleTokenRefresh(type)
+                }
+                "SHARE_IMAGE" -> {
+                    val data = jsonMessage.optJSONObject("data")
+                    if (data != null) {
+                        handleShareImage(data)
+                    } else {
+                        showToast("❌ Dados da imagem não fornecidos")
+                        Log.e("AppBridge", "Campo 'data' não encontrado em SHARE_IMAGE")
+                    }
                 }
                 else -> {
                     // Mostrar qualquer outra mensagem recebida
@@ -77,7 +88,7 @@ class AppBridgeInterface(
                     } catch(e) {
                         console.error('Erro ao atualizar token:', e);
                         return 'error: ' + e.message;
-                    }
+                    }n
                 })();
             """.trimIndent()
 
@@ -90,6 +101,29 @@ class AppBridgeInterface(
     private fun notifyFrontend(success: Boolean, newToken: String? = null, error: String? = null) {
         mainHandler.post {
             webView.evaluateJavascript("window.onSessionRefreshed && window.onSessionRefreshed();", null)
+        }
+    }
+
+    private fun handleShareImage(jsonMessage: JSONObject) {
+        try {
+            // Aceita tanto "base64Image" quanto "image" para compatibilidade
+            val base64Image = jsonMessage.optString("base64Image",
+                jsonMessage.optString("image", ""))
+            val mimeType = jsonMessage.optString("mimeType", "image/png")
+
+            if (base64Image.isEmpty()) {
+                Log.e("AppBridge", "base64Image está vazio")
+                return
+            }
+
+            // Executar compartilhamento na thread principal
+            mainHandler.post {
+                imageShareHandler.shareImageFromBase64(base64Image, mimeType)
+
+            }
+        } catch (e: Exception) {
+            Log.e("AppBridge", "Erro ao processar compartilhamento", e)
+            showToast("❌ Erro: ${e.message}")
         }
     }
 }
